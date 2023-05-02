@@ -177,3 +177,57 @@ func TestParse3(t *testing.T) {
 		})
 	}
 }
+
+func TestParse4(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		want     interface{}
+		wantErr  bool
+		dbgBreak bool
+	}{{
+		name: "1",
+		args: args{s: `
+		SELECT
+		    Account.Id
+		  , Account.Name
+		  , Account.Owner.Name
+		  , Id
+		  , Name
+		  , (SELECT Id, Name
+			 FROM Account.Cases
+			 WHERE Id in (SELECT CaseId FROM LiveChatTranscript WHERE StartTime = TODAY))
+		FROM
+			Contact
+		WHERE
+			(Account.Name like 'foo%'
+			or
+			Account.Name like 'bar%') and Account.Owner.Name = 'aaa'
+		`},
+		want:    nil,
+		wantErr: false,
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.dbgBreak {
+				t.Log("debug")
+			}
+
+			got, err := parser.Parse(tt.args.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				return
+			}
+
+			s := visualizer.Visualize(got)
+			fmt.Print(s)
+		})
+	}
+}
