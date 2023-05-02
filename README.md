@@ -10,7 +10,7 @@ SOQL query visualizer powered by [go-open-soql-parser](https://github.com/shelly
 
 ## 🧭 Demo
 
-* [SOQL visualizer](https://shellyln.github.io/soql-visualizer/)
+* [SOQL query visualizer](https://shellyln.github.io/soql-visualizer/)
 
 ## ⚖️ License
 
