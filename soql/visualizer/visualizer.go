@@ -16,15 +16,47 @@ func Visualize(q *types.SoqlQuery) string {
 			qLeaf := q.Meta.QueryGraph[leaf.QueryId]
 			if qLeaf.ParentQueryId != 0 {
 				parentQLeaf := q.Meta.QueryGraph[qLeaf.ParentQueryId]
-				parentName := parentQLeaf.Query.From[0].Name
+				parentQuery := parentQLeaf.Query
+
+				parentName := parentQuery.From[0].Name
+				parentColName := ""
 				fields := leaf.Object.PerObjectQuery.Fields
 
-				colName := ""
-				if len(fields) > 0 && len(fields[0].Name) > 0 {
-					colName = fields[0].Name[len(fields[0].Name)-1]
+				namesFound := false
+				collectNames := func(conditions []types.SoqlCondition) {
+					for i := range conditions {
+						if conditions[i].Opcode == types.SoqlConditionOpcode_FieldInfo &&
+							conditions[i].Value.Type == types.SoqlFieldInfo_SubQuery {
+
+							sq := conditions[i].Value.SubQuery
+							if sq == leaf.Query {
+								if i > 0 && conditions[i-1].Opcode == types.SoqlConditionOpcode_FieldInfo &&
+									conditions[i-1].Value.Type == types.SoqlFieldInfo_Field {
+
+									nm := conditions[i-1].Value.Name
+									parentNameLen := len(nm)
+									if parentNameLen > 0 {
+										parentName = nm[:parentNameLen-1]
+										parentColName = nm[parentNameLen-1] + " "
+										namesFound = true
+									}
+								}
+							}
+						}
+					}
 				}
 
-				relations += fmt.Sprintf("%v ||..o{ %v: \"in %v\"\n", parentName[len(parentName)-1], leaf.Name, colName)
+				collectNames(parentQuery.PostProcessWhere)
+				if !namesFound {
+					collectNames(parentQuery.Having)
+				}
+
+				subqColName := ""
+				if len(fields) > 0 && len(fields[0].Name) > 0 {
+					subqColName = fields[0].Name[len(fields[0].Name)-1]
+				}
+
+				relations += fmt.Sprintf("%v ||..o{ %v: \"%vin %v\"\n", parentName[len(parentName)-1], leaf.Name, parentColName, subqColName)
 			}
 			continue
 		}
