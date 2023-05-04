@@ -1,3 +1,7 @@
+// SOQL query visualizer powered by go-open-soql-parser and Mermaid.
+//
+// go-open-soql-parser:
+// https://github.com/shellyln/go-open-soql-parser
 package visualizer
 
 import (
@@ -6,6 +10,7 @@ import (
 	"github.com/shellyln/go-open-soql-parser/soql/parser/types"
 )
 
+// Returns Mermaid ER diagram definition.
 func Visualize(q *types.SoqlQuery) string {
 	relations := "erDiagram\n\n"
 
