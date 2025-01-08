@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.4
+* Update dependencies.
+
 # v0.0.3
 * Edit package comments.
 
